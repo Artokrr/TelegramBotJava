@@ -51,7 +51,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
             String[] tokens = messageText.split("\\s+");
-            if (messageText.matches("^/start\\s*$")) {
+            if (messageText.matches("^\\s*/start\\s*$")) {
                 startCommandReceived(chatId, update.getMessage().getChat().getUserName());
             }
             if (messageText.matches("^/convert\\s*$")) {
