@@ -50,37 +50,41 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
-            String command = messageText.split(" ")[0];
-            switch (command) {
-                case "/start":
-                    startCommandReceived(chatId, update.getMessage().getChat().getUserName());
-                    break;
-                case "/convert":
-                    double yuan, ruble;
-                    String[] tokens = messageText.split(" ");
-                    if (tokens.length != 2) {
-                        sendMessage(chatId, "Неправильное использование. Используйте: /convert [цена в юанях с сайта Poizon]");
-                    } else {
-                        try {
-                            yuan = Double.parseDouble(tokens[1]);
-                            ruble = yuan * 1.09 * 12.25 + 1000;
-                            sendMessage(chatId, String.format("Окончательная стоимость за товар будет: %.2f", ruble));
-                        } catch (NumberFormatException e) {
-                            sendMessage(chatId, "Неправильные входные данные, возможно вы ввели буквы вместо цифр. Используйте: /convert [цена в юанях с сайта Poizon]");
-                        }
-                    }
-                    break;
-                default:
-                    sendMessage(chatId, "Не понимаю Вас. Ознакомьтесь с меню команд");
+            String[] tokens = messageText.split("\\s+");
+            if (messageText.matches("^/start\\s*$")) {
+                startCommandReceived(chatId, update.getMessage().getChat().getUserName());
+            }
+            if (messageText.matches("^/convert\\s*$")) {
+                sendMessage(chatId, "Введите цену товара в юанях с сайта Poizon.");
+            }
+            if (messageText.matches("^/convert\\s+\\d+(\\.\\d+)?\\s*$")) {
+                try {
+                    double yuan = Double.parseDouble(tokens[1]);
+                    double ruble = yuan * 1.09 * 12.25 + 1000;
+                    sendMessage(chatId, String.format("Окончательная стоимость заказа будет: %.2f", ruble));
+                } catch (NumberFormatException e) {
+                    sendMessage(chatId, "Неправильные входные данные, возможно вы ввели буквы вместо цифр. " +
+                            "Используйте: /convert, а затем следующим сообщением напишите цену в юанях с сайта Poizon");
+                }
+            }
+            if (messageText.matches("^\\s*\\d+(\\.\\d+)?\\s*$")) {
+                try {
+                    double yuan = Double.parseDouble(messageText);
+                    double ruble = yuan * 1.09 * 12.25 + 1000;
+                    sendMessage(chatId, String.format("Окончательная стоимость заказа будет: %.2f", ruble));
+                } catch (NumberFormatException e) {
+                    sendMessage(chatId, "Неправильные входные данные, возможно вы ввели буквы вместо цифр. " +
+                            "Используйте: /convert, а затем следующим сообщением напишите цену в юанях с сайта Poizon");
+                }
             }
         }
-
     }
+
 
     private void startCommandReceived(long chatId, String name) {
         String answer = "Привет, @" + name + "!"
                 + "\nЯ помогу тебе рассчитать стоимость заказа и готов ответить на твои вопросы!"
-                + "\nВведи /convert и стоимость в юанях, а я рассчитаю тебе окончательную стоимость за товар в рублях";
+                + "\nВведи /convert и стоимость в юанях, а я рассчитаю тебе окончательную стоимость заказа в рублях";
 
         log.info("Replied to user @" + name);
 
